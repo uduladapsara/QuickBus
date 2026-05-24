@@ -5,8 +5,8 @@ const { protect, admin } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 router.get('/search', searchBuses);
-router.get('/:id', getBusById);
 router.get('/seat-layout', getSeatLayout);
+router.get('/:id', getBusById);
 router.post('/schedule', protect, admin, createBusSchedule);
 
 module.exports = router;

@@ -3,11 +3,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, CardElement, useStripe, useElements } from '@react-stripe/react-stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { createHireBooking } from '../../redux/slices/hireSlice'
 import api from '../../services/api'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+const stripePromise = loadStripe(
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+    'pk_test_51OcQHhSBa8YJvZ9HVz4jKpLmN2oP3qRsT4uVwXyZ6aB7cD8eF9gH0iJ1kL2mN3oP4qR5sT6uV7wX8yZ'
+)
 
 const HirePaymentForm = () => {
   const stripe = useStripe()

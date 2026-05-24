@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { createBooking } from '../../redux/slices/bookingSlice'
+import api from '../../services/api'
 import { FaCreditCard, FaWallet, FaAmazon } from 'react-icons/fa'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51OcQHhSBa8YJvZ9HVz4jKpLmN2oP3qRsT4uVwXyZ6aB7cD8eF9gH0iJ1kL2mN3oP4qR5sT6uV7wX8yZ')
@@ -87,8 +88,27 @@ const PaymentForm = () => {
 }
 
 const PaymentPage = () => {
+  const navigate = useNavigate()
   const { selectedSeats, selectedBus } = useSelector((state) => state.bus)
   const totalAmount = selectedSeats.length * parseInt(selectedBus?.fare || 0)
+
+  if (!selectedBus || selectedSeats.length === 0 || totalAmount <= 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="bg-white rounded-xl shadow-md p-6 text-center">
+          <h2 className="text-2xl font-bold mb-2">Payment</h2>
+          <p className="text-gray-600 mb-4">Missing booking details. Please select seats again.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/select-seats')}
+            className="bg-quickbus-orange text-white px-4 py-2 rounded-lg font-semibold"
+          >
+            Back to Seat Selection
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">

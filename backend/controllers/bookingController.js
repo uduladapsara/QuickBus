@@ -1,20 +1,33 @@
 // backend/controllers/bookingController.js
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Booking = require('../models/Booking');
 const BusSchedule = require('../models/BusSchedule');
 const Bus = require('../models/Bus');
 
+const getStripeClient = () => {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('Stripe secret key is not configured');
+  }
+  return require('stripe')(secretKey);
+};
+
 const createPaymentIntent = async (req, res) => {
   const { amount, currency = 'lkr' } = req.body;
   try {
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({ message: 'Invalid amount' });
+    }
+
+    const stripe = getStripeClient();
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Convert to cents/minor unit
+      amount: Math.round(numericAmount * 100),
       currency,
       payment_method_types: ['card']
     });
-    res.json({ clientSecret: paymentIntent.client_secret });
+    return res.json({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -25,6 +38,7 @@ const createBooking = async (req, res) => {
   travelDateObj.setHours(0, 0, 0, 0);
   
   // Verify payment intent
+  const stripe = getStripeClient();
   const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
   if (paymentIntent.status !== 'succeeded') {
     return res.status(400).json({ message: 'Payment not successful' });

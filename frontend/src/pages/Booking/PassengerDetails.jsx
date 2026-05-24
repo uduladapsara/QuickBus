@@ -1,5 +1,5 @@
 // frontend/src/pages/Booking/PassengerDetails.jsx
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { setPassengers } from '../../redux/slices/bookingSlice'
@@ -7,20 +7,25 @@ import { setPassengers } from '../../redux/slices/bookingSlice'
 const PassengerDetails = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { selectedSeats, selectedBus } = useSelector((state) => state.bus)
-  const [passengers, setPassengers] = useState(
-    selectedSeats.map((seat, index) => ({
-      seatNumber: seat,
-      name: '',
-      age: '',
-      gender: 'Male'
-    }))
-  )
+  const { selectedSeats } = useSelector((state) => state.bus)
+  const [passengers, setPassengersList] = useState([])
+
+  useEffect(() => {
+    if (selectedSeats.length === 0) return
+    setPassengersList(
+      selectedSeats.map((seat) => ({
+        seatNumber: seat,
+        name: '',
+        age: '',
+        gender: 'Male'
+      }))
+    )
+  }, [selectedSeats])
 
   const handleChange = (index, field, value) => {
     const updated = [...passengers]
     updated[index][field] = value
-    setPassengers(updated)
+    setPassengersList(updated)
   }
 
   const handleSubmit = (e) => {
@@ -32,6 +37,24 @@ const PassengerDetails = () => {
     }
     dispatch(setPassengers(passengers))
     navigate('/payment')
+  }
+
+  if (selectedSeats.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="bg-white rounded-xl shadow-md p-6 text-center">
+          <h2 className="text-2xl font-bold mb-2">Passenger Details</h2>
+          <p className="text-gray-600 mb-4">No seats selected. Please select seats first.</p>
+          <button
+            type="button"
+            onClick={() => navigate('/select-seats')}
+            className="bg-quickbus-orange text-white px-4 py-2 rounded-lg font-semibold"
+          >
+            Go to Seat Selection
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (

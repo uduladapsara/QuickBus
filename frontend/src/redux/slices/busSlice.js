@@ -12,13 +12,22 @@ export const fetchSeatLayout = createAsyncThunk('bus/seatLayout', async ({ busId
   return data
 })
 
+const loadJson = (key, fallback) => {
+  try {
+    const value = localStorage.getItem(key)
+    return value ? JSON.parse(value) : fallback
+  } catch (error) {
+    return fallback
+  }
+}
+
 const initialState = {
   buses: [],
   searchParams: { source: '', destination: '', date: '' },
   seatLayout: [],
   schedule: null,
-  selectedBus: null,
-  selectedSeats: [],
+  selectedBus: loadJson('selectedBus', null),
+  selectedSeats: loadJson('selectedSeats', []),
   loading: false,
   error: null
 }
@@ -39,10 +48,14 @@ const busSlice = createSlice({
         operator: action.payload.operator,
         busType: action.payload.busType
       }
+      localStorage.setItem('selectedSeats', JSON.stringify(state.selectedSeats))
+      localStorage.setItem('selectedBus', JSON.stringify(state.selectedBus))
     },
     clearSelection: (state) => {
       state.selectedSeats = []
       state.selectedBus = null
+      localStorage.removeItem('selectedSeats')
+      localStorage.removeItem('selectedBus')
     }
   },
   extraReducers: (builder) => {
